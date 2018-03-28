@@ -36,6 +36,20 @@ gulp.task('rename', () =>
     .pipe(gulp.dest('functions')),
 );
 
-gulp.task('default', done => runSequence(
-  'build', ['copy', 'rename'], done,
-));
+gulp.task('rebuild', done => runSequence('build', 'rename', done));
+
+gulp.task('watch', () => {
+  gulp.watch([
+    'src/server.js',
+    'src/api/*',
+    '!src/api/**/__tests__/**/*',
+  ], ['rebuild']);
+});
+
+gulp.task('default', (done) => {
+  if (util.env.prod) {
+    return runSequence('build', ['copy', 'rename'], done);
+  }
+
+  return runSequence('build', 'rename', 'watch', done);
+});
